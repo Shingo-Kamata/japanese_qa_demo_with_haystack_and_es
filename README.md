@@ -2,7 +2,7 @@
 
 ## 概要
 - Elasticsearch + Haystack を用いて Open-book な Question Answering システムを動かすサンプル
-  - https://zenn.dev/articles/8a182ff5acfa62/
+  - https://zenn.dev/shingo_kamata/articles/8a182ff5acfa62
 - 基本的には、Haystack の https://haystack.deepset.ai/tutorials/01_basic_qa_pipeline と https://docs.haystack.deepset.ai/docs/languages の内容を参考にしているだけ
 - サンプルのElasticsearchを利用する場合、Wikipedia(ja) が格納される
 
@@ -16,13 +16,13 @@
 ### 自前のElasticsearchに接続する場合
 - [haystack_qa.py](haystack_qa.py) に接続先のElasticsearch情報を記載してください
 - 注意点
-  - **必ず検証にもちいても問題の無いElasticsearchを利用してください**
-    - create_index などのオプションがあり、デフォルトがTrueだったりして、設定が変更されるリスクがあるので
+  - **必ず検証に用いても問題の無いElasticsearchを利用してください**
+    - create_index などのオプションがあり、デフォルトがTrueでありTrueだとMappingが追加されるなど不明な挙動があるため
 - すべてのドキュメントに `content_type: keyword型` がないとエラーになるようです。。。
   - content_type には Retriever 対象のフィールドのmapping type（text）などを記載します
-    - 参考： [sample_esの設定](https://github.com/Shingo-Kamata/japanese_qa_demo_with_haystack_and_es/blob/main/sample_es/analyzer.json#L64-L65)
+    - 参考： [Mapping](https://github.com/Shingo-Kamata/japanese_qa_demo_with_haystack_and_es/blob/main/sample_es/analyzer.json#L64-L65) [値](https://github.com/Shingo-Kamata/japanese_qa_demo_with_haystack_and_es/blob/main/sample_es/wiki_index_create.py#L34)
     - これを追加するこが困難な場合、local にインストールされた Hyastack コードの [search_engine.py](https://github.com/deepset-ai/haystack/blob/v1.10.0/haystack/document_stores/search_engine.py#L1126) の content_type の `None` を `"text"` に編集するワークアラウンドをすれば回避できます
-- に記載したように、Reader が走査するテキストはN単語くらいが良いので、場合によっては、Readerの対象フィールドを変更するか、ドキュメントの内容を分割することを検討してください
+- https://zenn.dev/shingo_kamata/articles/8a182ff5acfa62 に記載したように、Reader が走査するテキストは500単語くらいが良いので、場合によっては、Readerの対象フィールドを変更するか、ドキュメントの内容を分割することを検討してください
 
 ### サンプルのElasticsearchを利用する場合
 - [sample_es にある README](sample_es/README.md) に従って作成してください
