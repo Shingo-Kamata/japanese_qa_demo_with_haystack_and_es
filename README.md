@@ -21,7 +21,7 @@
 - すべてのドキュメントに `content_type: keyword型` がないとエラーになるようです。。。
   - content_type には Retriever 対象のフィールドのmapping type（text）などを記載します
     - 参考： [sample_esの設定](https://github.com/Shingo-Kamata/japanese_qa_demo_with_haystack_and_es/blob/main/sample_es/analyzer.json#L64-L65)
-    - これを追加するこが困難な場合、local でインストールした Hyastack コードの  を text に編集するワークアラウンドをすれば回避できます
+    - これを追加するこが困難な場合、local にインストールされた Hyastack コードの [search_engine.py](https://github.com/deepset-ai/haystack/blob/v1.10.0/haystack/document_stores/search_engine.py#L1126) の content_type の `None` を `"text"` に編集するワークアラウンドをすれば回避できます
 - に記載したように、Reader が走査するテキストはN単語くらいが良いので、場合によっては、Readerの対象フィールドを変更するか、ドキュメントの内容を分割することを検討してください
 
 ### サンプルのElasticsearchを利用する場合
@@ -30,6 +30,11 @@
 
 ### GPUがない場合
 - [haystack_qa.py](haystack_qa.py) の該当設定値を変更してください
+
+### poetry install （初回時のみ）
+```
+$ poetry install
+```
 
 ### QAの実行例（sample_es利用）
 ```

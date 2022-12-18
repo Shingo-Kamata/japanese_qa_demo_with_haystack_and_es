@@ -18,7 +18,8 @@ if __name__ == "__main__":
         "host": "localhost",
         "port": 9200,
         "index": "ja",
-        "create_index": False, # これがないと勝手に作られてしまうので注意（DefaultTrue ）
+        "create_index": False, # これがないと "embedding":{"type":"dense_vector","dims":768} というマッピングが勝手に追加されてしまうので注意（Default True ）
+        # 以下の3つの引数の役割については、 https://github.com/deepset-ai/haystack/blob/v1.10.0/haystack/document_stores/elasticsearch.py#L63 を参照
         "search_fields": ["text"],
         "content_field": "text",
         "name_field": "title.keyword",
