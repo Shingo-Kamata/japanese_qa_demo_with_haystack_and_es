@@ -1,4 +1,4 @@
-# Haystack と Elasticsearch を用いた日本語QA応答システムサンプル
+# HaystackTest
 
 ## 概要
 - Elasticsearch + Haystack を用いて Open-book な Question Answering システムを動かすサンプル

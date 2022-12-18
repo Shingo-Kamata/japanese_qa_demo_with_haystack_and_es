@@ -1,0 +1,69 @@
+{
+  "settings" : {
+    "index" : {
+      "analysis" : {
+        "filter" : {
+          "katakana_stemmer" : {
+            "type" : "kuromoji_stemmer",
+            "minimum_length" : "4"
+          }
+        },
+        "char_filter" : {
+          "iteration_mark_normalizer" : {
+            "type" : "kuromoji_iteration_mark",
+            "normalize_kana" : "true",
+            "normalize_kanji" : "true"
+          },
+          "nfkc_cf_normalizer" : {
+            "mode" : "compose",
+            "name" : "nfkc_cf",
+            "type" : "icu_normalizer"
+          }
+        },
+        "analyzer" : {
+          "ja_setting" : {
+            "filter" : [ "lowercase", "katakana_stemmer", "kuromoji_number" ],
+            "char_filter" : [ "nfkc_cf_normalizer", "iteration_mark_normalizer" ],
+            "type" : "custom",
+            "tokenizer" : "ja_search_tokenizer"
+          }
+        },
+        "tokenizer" : {
+          "ja_search_tokenizer" : {
+            "mode" : "search",
+            "type" : "kuromoji_tokenizer"
+          }
+        }
+      }
+    }
+  },
+  "mappings": {
+    "properties": {
+      "article_id": {
+        "type": "long"
+      },
+      "revid": {
+        "type": "long"
+      },
+      "url": {
+        "type": "keyword"
+      },
+      "title": {
+        "type": "text",
+        "analyzer": "ja_setting",
+        "fields": {
+          "keyword": {
+            "type": "keyword"
+          }
+        }
+      },
+      "text": {
+        "type": "text",
+        "analyzer": "ja_setting"
+      },
+      "content_type": {
+        "type": "keyword"
+      }
+    }
+  }
+}
