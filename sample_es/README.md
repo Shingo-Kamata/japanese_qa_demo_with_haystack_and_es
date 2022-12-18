@@ -1,62 +1,106 @@
-# HaystackTest
-
+# サンプル用Elasticsearchの構築
 ## 概要
-- Elasticsearch + Haystack を用いて Open-book な Question Answering システムを動かすサンプル
-  - https://zenn.dev/articles/8a182ff5acfa62/
-- 基本的には、Haystack の https://haystack.deepset.ai/tutorials/01_basic_qa_pipeline と https://docs.haystack.deepset.ai/docs/languages の内容を参考にしているだけ
-- サンプルのElasticsearchを利用する場合、Wikipedia(ja) が格納される
+- Wikipedia(ja)をソースとしたQAのための Elasticsearch を構築し Index の作成を行います
+- Analyzerの設定は、[analyzer.json](analyzer.json) に従います
+- Index 名は ja となります
+- Elasticsearch は localhost:9200 で起動されます
 
 ## 前提
-- Poetry（Python3.9) が必要
-- 自前で検証用のElasticsearchが使えるか、sample_es ディレクトリのElasticsearchを起動して使える前提
-- できればGPUがある環境を推奨するが、CPUでも動作可能
+- Wikipedia の記事は先に下記に記載する方法で準備してください
+- Wikipedia のドキュメントが格納できる空き容量が必要です
+- Elasticseearch コンテナを動かすための諸々の設定（メモリの割り当など）は必要に応じて実施してください
+- リポジトリカレントのpoetryで必要なライブラリがinstallがされている前提です
 
-## 使い方
+## Wikipedia(ja) データの準備
+1. Wikipedia(ja) の [dump](https://dumps.wikimedia.org/jawiki/) から `xml-p*.bz2` のファイルをDLしてください
+   - 全データだと大きすぎるので、サンプルで試すならば小さいサイズのものを推奨  
+   例： `jawiki-20221201-pages-articles-multistream2.xml-p114795p390428.bz2` 387.5 MB 
+   ```
+   $ wget https://dumps.wikimedia.org/jawiki/20221201/jawiki-20221201-pages-articles-multistream2.xml-p114795p390428.bz2
+   ```
+2. wikiextractor https://github.com/attardi/wikiextractor で output の名前で json ファイルを出力してください
+   ```
+   $ pip install wikiextractor
+   $ wikiextractor jawiki-20221201-pages-articles-multistream2.xml-p114795p390428.bz2 -o ./output --json
+   ```
 
-### 自前のElasticsearchに接続する場合
-- [haystack_qa.py](haystack_qa.py) に接続先のElasticsearch情報を記載してください
-- 注意点
-  - **必ず検証にもちいても問題の無いElasticsearchを利用してください**
-  - create_index などのオプションがあり、デフォルトがTrueだったりして、設定が変更されるリスクがあるので
-  - その他注意するべきことは、 https://zenn.dev/articles/8a182ff5acfa62/ を参照
 
-### サンプルのElasticsearchを利用する場合
-- [sample_es にある README](sample_es/README.md) に従って作成してください
-  - 記事のデータは別途用意する必要があります（上記README参照）
+## 構築方法
+1. Elasticsearchを起動します
+    ```
+    $ docker-compose up
+    ```
+2. Elasticsearch が起動したら、日本語対応のために、Elasticsearch にプラグインを入れます
+   ```
+   $ docker ps # コンテナIDを調べる
 
-### GPUがない場合
-- [haystack_qa.py](haystack_qa.py) の該当設定値を変更してください
-
-### QAの実行例（sample_es利用）
-```
-$ poetry run python haystack_qa.py
-(中略)
-INFO:haystack.modeling.utils:Using devices: CUDA:0 - Number of GPUs: 1
-質問を入力してください（exit で終了）>>ラグビーの日本監督は？
-Inferencing Samples: 100%|█| 1/1 [00:00<00:00,  4.41 Batches/s
-
-Query: ラグビーの日本監督は？
-Answers:
-[   <Answer {'answer': '神戸製鋼コベルコスティーラーズ', 'type': 'extractive', 'score': 0.9501436948776245, 'context': '大会と日本選手権の2冠連覇を成し遂げた。また日本代表としても第2～4回ラグビーワールドカップに出場した。\n2004年4月、現役を引退し、神戸製鋼コベルコスティーラーズの監督に就任。\n（2012年）早稲田大学ラグビー部アドバイザー(2015年退任)及び女子ラグビー７人制チーム【ラガール７】の総監督を務', 'offsets_in_document': [{'start': 524, 'end': 539}], 'offsets_in_context': [{'start': 68, 'end': 83}], 'document_id': 'VvhNJYUBLyfAJxXYRL5-', 'meta': {'article_id': '322679', 'revid': '1980193', 'url': 'https://ja.wikipedia.org/wiki?curid=322679', 'title': '増保輝則'}}>,
-    <Answer {'answer': '萩本光威', 'type': 'extractive', 'score': 0.842361569404602, 'context': 'クネームつけるラグビ日本代表愛称向井監督世界背中見えるコメント大会終了後解任2004年3月22日神戸神戸製鋼製鋼コベルコスティーラーズヘッドコーチ萩本光威監督就任当初同年スーパスーパーパワーズカップパワーズカップロシアカナダ破る優勝導く幸先よいスタート思う続くイタリア敗戦11月欧州遠征スコットランド', 'offsets_in_document': [{'start': 390, 'end': 394}], 'offsets_in_context': [{'start': 73, 'end': 77}], 'document_id': 'afpNJYUBLyfAJxXY7zWG', 'meta': {'article_id': '190986', 'revid': '703098', 'url': 'https://ja.wikipedia.org/wiki?curid=190986', 'title': 'ラグビー日本代表'}}>,
-...
-```
-初回実行時に、`farm_reader_model/` に https://huggingface.co/ybelkada/japanese-roberta-question-answering のモデルがDLされます
-
-## フォルダ構成
-```
-.
-├── README.md
-├── farm_reader_model・・・Readerのモデルを保存（キャッシュ）しておく置き場
-│   └── .gitkeep
-├── haystack_qa.py・・・QAモジュール
-├── poetry.lock
-├── pyproject.toml
-└── sample_es・・・サンプル用のEs
-    ├── README.md・・・サンプルEs構築のREADME
-    ├── analyzer.json・・・サンプルEsのAnalyzer設定
-    ├── docker-compose.yml・・・サンプルEsのDocker
-    ├── （output・・・wikiextractの結果を保存する）
-    ├── test_wiki_iindex_create.py・・・のテストコード
-    └── wiki_iindex_create.py
-```
+   $ docker exec ${コンテナID} elasticsearch-plugin install  analysis-kuromoji  analysis-icu 
+   
+   -> Installing analysis-kuromoji
+   -> Downloading analysis-kuromoji from elastic
+   [=================================================] 100%??
+   -> Installed analysis-kuromoji
+   -> Installing analysis-icu
+   -> Downloading analysis-icu from elastic
+   [=================================================] 100%??
+   -> Installed analysis-icu
+   ```
+3. インストールが成功したら、再起動させてプラグインを有効化させる
+    ```
+    $ docker restrart ${コンテナID}
+    {コンテナID}
+    ```
+4. 以下のコマンドで、Elasticsearch に Index 作成を行います
+   ```
+   $ poetry run python wiki_index_create.py
+   (haystack-test-pNsJTUgx-py3.9) sample_es[master *+]$ poetry run python wiki_index_create.py 
+   output/ ['AA'] []
+   output/AA [] ['wiki_10', 'wiki_03', 'wiki_04', 'wiki_05', 'wiki_02', 'wiki_09',    'wiki_07', 'wiki_00', 'wiki_01', 'wiki_06', 'wiki_08']
+   処理中： output/AA/wiki_10
+   処理中： output/AA/wiki_03
+   ...
+   ```
+5. 構築確認
+    - index setting の確認 
+    ```
+    $ curl -XGET http://localhost:9200/ja?pretty
+    {
+      "ja" : {
+      "aliases" : { },
+      "mappings" : {
+      "properties" : {
+      "article_id" : {
+      "type" : "long"
+      ...
+    ```
+    - ドキュメントの確認
+    ```
+   $ curl -XGET http://localhost:9200/_search?pretty
+    {
+      "took" : 9,
+      "timed_out" : false,
+      "_shards" : {
+        "total" : 2,
+        "successful" : 2,
+        "skipped" : 0,
+        "failed" : 0
+      },
+      "hits" : {
+        "total" : {
+          "value" : 10000,
+          "relation" : "gte"
+        },
+        "max_score" : 1.0,
+        "hits" : [
+          {
+            "_index" : "ja",
+            "_type" : "_doc",
+            "_id" : "ydjFG4UBTRxrRak5qACr",
+            "_score" : 1.0,
+            "_source" : {
+              "article_id" : "377229",
+              "revid" : "1350549",
+              "url" : "https://ja.wikipedia.org/wiki?curid=377229",
+              "title" : "能管",
+              "text" : "能管（のうかん）は、日本の横笛の一つである。能だけではなく歌舞伎、寄席囃子や祇園囃子でも用いられる。竹製のエアリード楽器の一つであるが、独特の音を生むために内径の狭い部分が作られているのが特徴である。\n概説.\n40cm程の長さで、七つの指穴を
+    ```
