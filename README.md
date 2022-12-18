@@ -17,8 +17,12 @@
 - [haystack_qa.py](haystack_qa.py) に接続先のElasticsearch情報を記載してください
 - 注意点
   - **必ず検証にもちいても問題の無いElasticsearchを利用してください**
-  - create_index などのオプションがあり、デフォルトがTrueだったりして、設定が変更されるリスクがあるので
-  - その他注意するべきことは、 https://zenn.dev/articles/8a182ff5acfa62/ を参照
+    - create_index などのオプションがあり、デフォルトがTrueだったりして、設定が変更されるリスクがあるので
+- すべてのドキュメントに `content_type: keyword型` がないとエラーになるようです。。。
+  - content_type には Retriever 対象のフィールドのmapping type（text）などを記載します
+    - 参考： [sample_esの設定](https://github.com/Shingo-Kamata/japanese_qa_demo_with_haystack_and_es/blob/main/sample_es/analyzer.json#L64-L65)
+    - これを追加するこが困難な場合、local でインストールした Hyastack コードの  を text に編集するワークアラウンドをすれば回避できます
+- に記載したように、Reader が走査するテキストはN単語くらいが良いので、場合によっては、Readerの対象フィールドを変更するか、ドキュメントの内容を分割することを検討してください
 
 ### サンプルのElasticsearchを利用する場合
 - [sample_es にある README](sample_es/README.md) に従って作成してください

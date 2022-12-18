@@ -18,7 +18,7 @@ if __name__ == "__main__":
         "host": "localhost",
         "port": 9200,
         "index": "ja",
-        "create_index": False,
+        "create_index": False, # これがないと勝手に作られてしまうので注意（DefaultTrue ）
         "search_fields": ["text"],
         "content_field": "text",
         "name_field": "title.keyword",
